@@ -1,0 +1,5 @@
+﻿Id,Name,Parameters,,,,Addresses,,,IntSample,floatArraySample,EnumSample,HandType,Category
+[JsonIgnore]int,string,float[],,,,string[],,,int,float[],enum,enum,enum
+1,HealPotion,1,,,,sprite,model,description,,,Member1,Goo,Potion
+2,AttackPotion,10,20,,,,,,,,Member2,Pa,Equipment
+3,DefencePotion,30,33,55,66,,,,,,Member3,Pa,Weapon

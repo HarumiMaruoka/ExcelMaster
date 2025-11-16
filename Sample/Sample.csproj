@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ExcelMaster\CsvToSource.csproj" />
+    <ProjectReference Include="..\ExcelToCsv\ExcelToCsv.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Assets\Excels\" />
+    <Folder Include="Assets\Csv\" />
+  </ItemGroup>
+
+</Project>
