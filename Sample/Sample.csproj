@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ExcelMaster\CsvToSource.csproj" />
     <ProjectReference Include="..\ExcelToCsv\ExcelToCsv.csproj" />
   </ItemGroup>
 
