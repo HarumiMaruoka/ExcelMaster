@@ -4,21 +4,21 @@
     {
         public static void Run()
         {
-            var classSource = ExcelMaster.MasterClassGenerator.Generate(
+            var classSource = CsvToSource.MasterClassGenerator.Generate(
                 usingNamespaces: new string[] { "System", "System.Collections.Generic" },
-                classDefinition: new ExcelMaster.ClassDefinition
+                classDefinition: new CsvToSource.ClassDefinition
                 {
                     Namespace = "MyGeneratedNamespace",
                     ClassName = "MyGeneratedClass",
-                    Properties = new List<ExcelMaster.PropertyDefinition>
+                    Properties = new List<CsvToSource.PropertyDefinition>
                     {
-                        new ExcelMaster.PropertyDefinition
+                        new CsvToSource.PropertyDefinition
                         {
                             Name = "Id",
                             Type = "int",
                             Attributes = new string[] { "[Serializable]" }
                         },
-                        new ExcelMaster.PropertyDefinition
+                        new CsvToSource.PropertyDefinition
                         {
                             Name = "Name",
                             Type = "string"

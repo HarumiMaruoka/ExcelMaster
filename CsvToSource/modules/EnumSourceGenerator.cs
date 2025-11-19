@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ExcelMaster
+namespace CsvToSource
 {
     public static class EnumSourceGenerator
     {

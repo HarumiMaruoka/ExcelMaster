@@ -1,7 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using System;
 
-namespace ExcelMaster
+namespace CsvToSource
 {
     [Generator]
     public class SourceGenerator : ISourceGenerator

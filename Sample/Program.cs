@@ -1,5 +1,4 @@
-﻿using ExcelMaster;
-using Sample.Samples;
+﻿using Sample.Samples;
 using System;
 
 namespace Sample

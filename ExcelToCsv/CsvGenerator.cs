@@ -4,7 +4,7 @@ using System.Text;
 using ClosedXML.Excel;
 using System.Collections.Generic;
 
-namespace ExcelMaster
+namespace ExcelToCsv
 {
     public static class CsvGenerator
     {
