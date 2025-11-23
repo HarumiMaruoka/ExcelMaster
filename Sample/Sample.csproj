@@ -16,4 +16,8 @@
     <Folder Include="Assets\Csv\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="MasterMemory" Version="3.0.4" />
+  </ItemGroup>
+
 </Project>

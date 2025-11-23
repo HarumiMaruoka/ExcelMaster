@@ -1,4 +1,5 @@
-﻿using Sample.Samples;
+﻿using Sample.Examples;
+using Sample.Samples;
 using System;
 
 namespace Sample
@@ -11,7 +12,11 @@ namespace Sample
 
             // CsvGenerateExample.Run();
 
-            CsvToSourceExample.Run();
+            // CsvToSourceExample.Run();
+
+            // BinaryBuildExample.Run();
+
+            CsvObjectMappingExample.Run();
         }
     }
 }

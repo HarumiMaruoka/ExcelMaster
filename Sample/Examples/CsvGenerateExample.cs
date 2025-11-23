@@ -4,7 +4,7 @@
     {
         public static void Run()
         {
-            ExcelToCsv.CsvGenerator.ExportToCsv(
+            ExcelToCsv.CsvConverter.ExportToCsv(
                 excelFilePath: "Assets/Excels/Item.xlsx",
                 sheetIndex: 1,
                 csvFilePath: "Assets/Csv/Item_Output.csv",
@@ -12,7 +12,7 @@
                 startColumn: 1
             );
 
-            var csv = ExcelToCsv.CsvGenerator.ImportFromCsv(
+            var csv = ExcelToCsv.CsvConverter.ImportFromCsv(
                 csvFilePath: "Assets/Csv/Item_Output.csv"
             );
 

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace ExcelToCsv
 {
-    public static class CsvGenerator
+    public static class CsvConverter
     {
         public static string ExportToCsv(string excelFilePath, int sheetIndex, string csvFilePath, int startRow, int startColumn, int endRow = -1, int endColumn = -1)
         {

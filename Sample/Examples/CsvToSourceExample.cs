@@ -5,7 +5,7 @@
         public static void Run()
         {
             var csvPath = "Assets/Csv/Item_Output.csv";
-            var csvContent = ExcelToCsv.CsvGenerator.ImportFromCsv(csvPath);
+            var csvContent = ExcelToCsv.CsvConverter.ImportFromCsv(csvPath);
             var source = CsvToSource.CsvClassGenerator.Parse(
                 new string[] { "System", "System.Collections.Generic" },
                 "GameNamespace",
