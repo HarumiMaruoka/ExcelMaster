@@ -1,4 +1,4 @@
-﻿using System;
+﻿using ExcelMaster;
 
 namespace Sample.Examples
 {
@@ -7,7 +7,7 @@ namespace Sample.Examples
         public static void Run()
         {
             // マスタークラス(ItemData)用のバイナリ生成クラスソースコードを生成し表示する例
-            var builderSource = CsvToSource.MasterMemoryBinaryGenerator.Generate(
+            var builderSource = MasterMemoryBinaryGenerator.Generate(
                 @namespace: "GameNamespace",
                 buildClassName: "ItemDataBinaryBuilder",
                 masterClassName: "ItemData"

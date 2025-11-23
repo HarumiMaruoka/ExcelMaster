@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace CsvToSource
+namespace ExcelMaster
 {
     /// <summary>
     /// MasterMemory 用バイナリ生成クラスのソースコードを動的生成するジェネレータ。

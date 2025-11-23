@@ -5,7 +5,7 @@ using System.Globalization;
 using System.Reflection;
 using System.Text;
 
-namespace ExcelToCsv
+namespace ExcelMaster
 {
     public static class CsvObjectMapper
     {

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using ExcelMaster;
 
 namespace Sample.Examples
 {
@@ -16,25 +14,25 @@ namespace Sample.Examples
             var usings = new[] { "MasterMemory", "MessagePack" };
 
             //生成するマスタークラス情報
-            var classDef = new CsvToSource.ClassDefinition
+            var classDef = new ClassDefinition
             {
                 Namespace = "GameNamespace", // 任意の名前空間
                 ClassName = "ItemData", // マスタークラス名
                 Attributes = new[] { "[MemoryTable(\"Item\"), MessagePackObject(true)]" },
-                Properties = new List<CsvToSource.PropertyDefinition>
+                Properties = new List<PropertyDefinition>
                 {
-                    new CsvToSource.PropertyDefinition { Name = "Id", Type = "int", Attributes = new[] {"[PrimaryKey]" } },
-                    new CsvToSource.PropertyDefinition { Name = "Name", Type = "string" },
-                    new CsvToSource.PropertyDefinition { Name = "Price", Type = "int" },
-                    new CsvToSource.PropertyDefinition { Name = "Rarity", Type = "int" }
+                    new PropertyDefinition { Name = "Id", Type = "int", Attributes = new[] {"[PrimaryKey]" } },
+                    new PropertyDefinition { Name = "Name", Type = "string" },
+                    new PropertyDefinition { Name = "Price", Type = "int" },
+                    new PropertyDefinition { Name = "Rarity", Type = "int" }
                 }
             };
 
             // マスタークラスソース生成
-            var masterClassSource = CsvToSource.MasterClassGenerator.Generate(usings, classDef);
+            var masterClassSource = MasterClassGenerator.Generate(usings, classDef);
 
             // バイナリ生成クラスソース生成
-            var binaryBuilderSource = CsvToSource.MasterMemoryBinaryGenerator.Generate(
+            var binaryBuilderSource = MasterMemoryBinaryGenerator.Generate(
                 usingNamespaces: new[] { "Sample" },
                 @namespace: "GameNamespace",
                 buildClassName: "ItemDataBinaryBuilder",

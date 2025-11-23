@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using ExcelMaster;
 
 namespace Sample.Examples
 {
@@ -18,7 +14,7 @@ namespace Sample.Examples
                 { "2", "Bob", "false" },              // データ行2
                 { "3", "Charlie", "true" }            // データ行3
             };
-            var objects = ExcelToCsv.CsvObjectMapper.Map<SampleData>(csvData);
+            var objects = CsvObjectMapper.Map<SampleData>(csvData);
             foreach (var obj in objects)
             {
                 Console.WriteLine($"Id: {obj.Id}, Name: {obj.Name}, IsActive: {obj.IsActive}");

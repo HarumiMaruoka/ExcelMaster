@@ -1,10 +1,12 @@
-﻿namespace Sample.Samples
+﻿using ExcelMaster;
+
+namespace Sample.Examples
 {
     internal class CsvGenerateExample
     {
         public static void Run()
         {
-            ExcelToCsv.CsvConverter.ExportToCsv(
+            CsvConverter.ExportToCsv(
                 excelFilePath: "Assets/Excels/Item.xlsx",
                 sheetIndex: 1,
                 csvFilePath: "Assets/Csv/Item_Output.csv",
@@ -12,7 +14,7 @@
                 startColumn: 1
             );
 
-            var csv = ExcelToCsv.CsvConverter.ImportFromCsv(
+            var csv = CsvConverter.ImportFromCsv(
                 csvFilePath: "Assets/Csv/Item_Output.csv"
             );
 
