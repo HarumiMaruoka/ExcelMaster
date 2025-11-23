@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 
 namespace CsvToSource
@@ -11,7 +12,7 @@ namespace CsvToSource
         /// <summary>
         /// バイナリ生成用クラスのソースコード文字列を生成。
         /// </summary>
-        public static string Generate(string @namespace, string buildClassName, string masterClassName)
+        public static string Generate(IEnumerable<string> usingNamespaces = null, string @namespace = null, string buildClassName = null, string masterClassName = null)
         {
             if (string.IsNullOrWhiteSpace(@namespace)) throw new ArgumentException("namespace is required", nameof(@namespace));
             if (string.IsNullOrWhiteSpace(buildClassName)) throw new ArgumentException("buildClassName is required", nameof(buildClassName));
@@ -34,6 +35,21 @@ namespace CsvToSource
             sb.AppendLine("using MasterMemory;");
             sb.AppendLine("using MessagePack;");
             sb.AppendLine("using MessagePack.Resolvers;");
+            //追加の using (重複/空白/既存は除外)
+            if (usingNamespaces != null)
+            {
+                var existing = new HashSet<string>(StringComparer.Ordinal)
+                {
+                    "System", "System.IO", "MasterMemory", "MessagePack", "MessagePack.Resolvers"
+                };
+                foreach (var ns in usingNamespaces)
+                {
+                    if (string.IsNullOrWhiteSpace(ns)) continue;
+                    var trimmed = ns.Trim();
+                    if (!existing.Add(trimmed)) continue; //既存 or 重複
+                    sb.Append("using ").Append(trimmed).AppendLine(";");
+                }
+            }
             sb.AppendLine();
             AppendIndented(0, $"namespace {@namespace}");
             AppendIndented(0, "{");

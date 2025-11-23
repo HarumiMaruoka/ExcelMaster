@@ -16,7 +16,9 @@ namespace Sample
 
             // BinaryBuildExample.Run();
 
-            CsvObjectMappingExample.Run();
+            // CsvObjectMappingExample.Run();
+
+            GenerateSourceExample.Run();
         }
     }
 }

@@ -11,13 +11,13 @@ namespace Sample.Examples
         public static void Run()
         {
             var csvData = new string[,]
- {
-                { "Id", "Name", "IsActive" },          // ヘッダー行
+            {
+                { "Id", "Name", "IsActive" },         // ヘッダー行
                 { "int", "string", "bool" },          // 型情報行
                 { "1", "Alice", "true" },             // データ行1
                 { "2", "Bob", "false" },              // データ行2
                 { "3", "Charlie", "true" }            // データ行3
- };
+            };
             var objects = ExcelToCsv.CsvObjectMapper.MapCsvToObjects<SampleData>(csvData);
             foreach (var obj in objects)
             {
