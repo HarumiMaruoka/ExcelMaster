@@ -18,7 +18,9 @@ namespace Sample
 
             // CsvObjectMappingExample.Run();
 
-            GenerateSourceExample.Run();
+            // GenerateSourceExample.Run();
+
+            ItemDataConversionExample.Run();
         }
     }
 }

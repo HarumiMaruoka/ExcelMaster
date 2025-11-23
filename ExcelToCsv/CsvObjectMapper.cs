@@ -17,7 +17,7 @@ namespace ExcelToCsv
         /// <typeparam name="T">生成対象型</typeparam>
         /// <param name="csv">CSVセル値0,1行目はヘッダー</param>
         /// <returns>T の配列</returns>
-        public static T[] MapCsvToObjects<T>(string[,] csv) where T : new()
+        public static T[] Map<T>(string[,] csv) where T : new()
         {
             if (csv == null) throw new ArgumentNullException(nameof(csv));
             var rows = csv.GetLength(0);

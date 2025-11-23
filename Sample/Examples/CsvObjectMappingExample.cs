@@ -18,7 +18,7 @@ namespace Sample.Examples
                 { "2", "Bob", "false" },              // データ行2
                 { "3", "Charlie", "true" }            // データ行3
             };
-            var objects = ExcelToCsv.CsvObjectMapper.MapCsvToObjects<SampleData>(csvData);
+            var objects = ExcelToCsv.CsvObjectMapper.Map<SampleData>(csvData);
             foreach (var obj in objects)
             {
                 Console.WriteLine($"Id: {obj.Id}, Name: {obj.Name}, IsActive: {obj.IsActive}");
