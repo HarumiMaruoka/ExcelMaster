@@ -7,7 +7,7 @@ namespace ExcelMaster
 {
     public class CsvClassGenerator
     {
-        public static string Parse(IEnumerable<string> usingNamespaces, string @namespace, string className, string[,] csv)
+        public static string Parse(IEnumerable<string> usingNamespaces, IEnumerable<string> classAttributes, string @namespace, string className, string[,] csv)
         {
             if (csv == null) throw new ArgumentNullException(nameof(csv));
 
@@ -63,7 +63,7 @@ namespace ExcelMaster
                 if (!string.IsNullOrWhiteSpace(typeToken))
                 {
                     typeToken = typeToken.Trim();
-                    while (typeToken.StartsWith("[") )
+                    while (typeToken.StartsWith("["))
                     {
                         int close = typeToken.IndexOf(']');
                         if (close <= 0) break; // malformed, stop parsing attributes
@@ -124,12 +124,13 @@ namespace ExcelMaster
                 c = groupEnd;
             }
 
-            // Build using MasterClassBuilder
+            // Build using MasterClassBuilder (added classAttributes assignment)
             var classDef = new ClassDefinition
             {
                 Namespace = @namespace,
                 ClassName = className,
-                Properties = properties
+                Properties = properties,
+                Attributes = classAttributes
             };
 
             var source = MasterClassGenerator.Generate(usingNamespaces, classDef, enumDefs);

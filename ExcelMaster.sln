@@ -5,7 +5,7 @@ VisualStudioVersion = 17.14.36623.8
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample", "Sample\Sample.csproj", "{1C3D29BD-1F2E-4CA4-A0C7-5E18944DACE6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExcelMaster", "ExcelToCsv\ExcelMaster.csproj", "{803896BB-39AD-4A27-8533-1A1C2E2B0389}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExcelMaster", "ExcelMaster\ExcelMaster.csproj", "{A6EDF049-B045-3660-AB66-106673F727EC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +17,10 @@ Global
 		{1C3D29BD-1F2E-4CA4-A0C7-5E18944DACE6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1C3D29BD-1F2E-4CA4-A0C7-5E18944DACE6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1C3D29BD-1F2E-4CA4-A0C7-5E18944DACE6}.Release|Any CPU.Build.0 = Release|Any CPU
-		{803896BB-39AD-4A27-8533-1A1C2E2B0389}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{803896BB-39AD-4A27-8533-1A1C2E2B0389}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{803896BB-39AD-4A27-8533-1A1C2E2B0389}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{803896BB-39AD-4A27-8533-1A1C2E2B0389}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A6EDF049-B045-3660-AB66-106673F727EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A6EDF049-B045-3660-AB66-106673F727EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A6EDF049-B045-3660-AB66-106673F727EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A6EDF049-B045-3660-AB66-106673F727EC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

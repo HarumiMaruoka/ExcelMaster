@@ -7,10 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ExcelToCsv\ExcelMaster.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Folder Include="Assets\Excels\" />
     <Folder Include="Assets\Csv\" />
     <Folder Include="Assets\Generated\" />
@@ -18,6 +14,10 @@
 
   <ItemGroup>
     <PackageReference Include="MasterMemory" Version="3.0.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ExcelMaster\ExcelMaster.csproj" />
   </ItemGroup>
 
 </Project>

@@ -8,7 +8,7 @@ namespace ExcelMaster
 {
     public static class CsvConverter
     {
-        public static string ExportToCsv(string excelFilePath, int sheetIndex, string csvFilePath, int startRow, int startColumn, int endRow = -1, int endColumn = -1)
+        public static string[,] ExportToCsv(string excelFilePath, int sheetIndex, string csvFilePath, int startRow, int startColumn, int endRow = -1, int endColumn = -1)
         {
             if (string.IsNullOrWhiteSpace(excelFilePath)) throw new ArgumentException("excelFilePath is required", nameof(excelFilePath));
             if (!File.Exists(excelFilePath)) throw new FileNotFoundException("Excel file not found", excelFilePath);
@@ -30,13 +30,19 @@ namespace ExcelMaster
             if (endRow < startRow) throw new ArgumentOutOfRangeException(nameof(endRow), "endRow must be >= startRow");
             if (endColumn < startColumn) throw new ArgumentOutOfRangeException(nameof(endColumn), "endColumn must be >= startColumn");
 
+            int rowCount = endRow - startRow + 1;
+            int colCount = endColumn - startColumn + 1;
+            var data = new string[rowCount, colCount];
             var sb = new StringBuilder();
             for (int r = startRow; r <= endRow; r++)
             {
+                int rr = r - startRow;
                 for (int c = startColumn; c <= endColumn; c++)
                 {
+                    int cc = c - startColumn;
                     var cell = worksheet.Cell(r, c);
                     var text = cell.GetFormattedString();
+                    data[rr, cc] = text;
                     sb.Append(EscapeCsv(text));
                     if (c < endColumn) sb.Append(',');
                 }
@@ -52,10 +58,10 @@ namespace ExcelMaster
             }
 
             File.WriteAllText(csvFilePath, csvText, new UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
-            return csvText;
+            return data;
         }
 
-        public static string ExportToCsv(string excelFilePath, string sheetName, string csvFilePath, int startRow, int startColumn, int endRow = -1, int endColumn = -1)
+        public static string[,] ExportToCsv(string excelFilePath, string sheetName, string csvFilePath, int startRow, int startColumn, int endRow = -1, int endColumn = -1)
         {
             if (string.IsNullOrWhiteSpace(excelFilePath)) throw new ArgumentException("excelFilePath is required", nameof(excelFilePath));
             if (!File.Exists(excelFilePath)) throw new FileNotFoundException("Excel file not found", excelFilePath);
@@ -77,13 +83,19 @@ namespace ExcelMaster
             if (endRow < startRow) throw new ArgumentOutOfRangeException(nameof(endRow), "endRow must be >= startRow");
             if (endColumn < startColumn) throw new ArgumentOutOfRangeException(nameof(endColumn), "endColumn must be >= startColumn");
 
+            int rowCount = endRow - startRow + 1;
+            int colCount = endColumn - startColumn + 1;
+            var data = new string[rowCount, colCount];
             var sb = new StringBuilder();
             for (int r = startRow; r <= endRow; r++)
             {
+                int rr = r - startRow;
                 for (int c = startColumn; c <= endColumn; c++)
                 {
+                    int cc = c - startColumn;
                     var cell = worksheet.Cell(r, c);
                     var text = cell.GetFormattedString();
+                    data[rr, cc] = text;
                     sb.Append(EscapeCsv(text));
                     if (c < endColumn) sb.Append(',');
                 }
@@ -99,7 +111,79 @@ namespace ExcelMaster
             }
 
             File.WriteAllText(csvFilePath, csvText, new UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
-            return csvText;
+            return data;
+        }
+
+        public static string[,] ExcelToArray(string excelFilePath, int sheetIndex, int startRow, int startColumn, int endRow = -1, int endColumn = -1)
+        {
+            if (string.IsNullOrWhiteSpace(excelFilePath)) throw new ArgumentException("excelFilePath is required", nameof(excelFilePath));
+            if (!File.Exists(excelFilePath)) throw new FileNotFoundException("Excel file not found", excelFilePath);
+            if (sheetIndex <= 0) throw new ArgumentOutOfRangeException(nameof(sheetIndex), "sheetIndex must be >=1");
+            if (startRow <= 0) throw new ArgumentOutOfRangeException(nameof(startRow), "startRow must be >=1");
+            if (startColumn <= 0) throw new ArgumentOutOfRangeException(nameof(startColumn), "startColumn must be >=1");
+
+            using var workbook = new XLWorkbook(excelFilePath);
+            var worksheet = workbook.Worksheet(sheetIndex);
+            if (worksheet == null)
+                throw new ArgumentException($"Worksheet at index {sheetIndex} not found.", nameof(sheetIndex));
+
+            var lastRow = worksheet.LastRowUsed()?.RowNumber() ?? startRow;
+            var lastCol = worksheet.LastColumnUsed()?.ColumnNumber() ?? startColumn;
+            if (endRow < 0) endRow = lastRow;
+            if (endColumn < 0) endColumn = lastCol;
+            if (endRow < startRow) throw new ArgumentOutOfRangeException(nameof(endRow), "endRow must be >= startRow");
+            if (endColumn < startColumn) throw new ArgumentOutOfRangeException(nameof(endColumn), "endColumn must be >= startColumn");
+
+            int rowCount = endRow - startRow + 1;
+            int colCount = endColumn - startColumn + 1;
+            var data = new string[rowCount, colCount];
+            for (int r = startRow; r <= endRow; r++)
+            {
+                int rr = r - startRow;
+                for (int c = startColumn; c <= endColumn; c++)
+                {
+                    int cc = c - startColumn;
+                    var cell = worksheet.Cell(r, c);
+                    data[rr, cc] = cell.GetFormattedString();
+                }
+            }
+            return data;
+        }
+
+        public static string[,] ExcelToArray(string excelFilePath, string sheetName, int startRow, int startColumn, int endRow = -1, int endColumn = -1)
+        {
+            if (string.IsNullOrWhiteSpace(excelFilePath)) throw new ArgumentException("excelFilePath is required", nameof(excelFilePath));
+            if (!File.Exists(excelFilePath)) throw new FileNotFoundException("Excel file not found", excelFilePath);
+            if (string.IsNullOrWhiteSpace(sheetName)) throw new ArgumentException("sheetName is required", nameof(sheetName));
+            if (startRow <= 0) throw new ArgumentOutOfRangeException(nameof(startRow), "startRow must be >=1");
+            if (startColumn <= 0) throw new ArgumentOutOfRangeException(nameof(startColumn), "startColumn must be >=1");
+
+            using var workbook = new XLWorkbook(excelFilePath);
+            var worksheet = workbook.Worksheet(sheetName);
+            if (worksheet == null)
+                throw new ArgumentException($"Worksheet '{sheetName}' not found.", nameof(sheetName));
+
+            var lastRow = worksheet.LastRowUsed()?.RowNumber() ?? startRow;
+            var lastCol = worksheet.LastColumnUsed()?.ColumnNumber() ?? startColumn;
+            if (endRow < 0) endRow = lastRow;
+            if (endColumn < 0) endColumn = lastCol;
+            if (endRow < startRow) throw new ArgumentOutOfRangeException(nameof(endRow), "endRow must be >= startRow");
+            if (endColumn < startColumn) throw new ArgumentOutOfRangeException(nameof(endColumn), "endColumn must be >= startColumn");
+
+            int rowCount = endRow - startRow + 1;
+            int colCount = endColumn - startColumn + 1;
+            var data = new string[rowCount, colCount];
+            for (int r = startRow; r <= endRow; r++)
+            {
+                int rr = r - startRow;
+                for (int c = startColumn; c <= endColumn; c++)
+                {
+                    int cc = c - startColumn;
+                    var cell = worksheet.Cell(r, c);
+                    data[rr, cc] = cell.GetFormattedString();
+                }
+            }
+            return data;
         }
 
         private static string EscapeCsv(string field)

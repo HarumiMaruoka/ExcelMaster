@@ -10,6 +10,7 @@ namespace Sample.Examples
             var csvContent = CsvConverter.ImportFromCsv(csvPath);
             var source = CsvClassGenerator.Parse(
                 new string[] { "System", "System.Collections.Generic" },
+                new string[] { "[Serializable]" },
                 "GameNamespace",
                 "ItemData",
                 csvContent);
