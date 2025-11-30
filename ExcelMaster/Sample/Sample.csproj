@@ -9,7 +9,6 @@
   <ItemGroup>
     <Folder Include="Assets\Excels\" />
     <Folder Include="Assets\Csv\" />
-    <Folder Include="Assets\Generated\" />
   </ItemGroup>
 
   <ItemGroup>

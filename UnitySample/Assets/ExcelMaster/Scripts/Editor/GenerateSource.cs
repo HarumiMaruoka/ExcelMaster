@@ -4,24 +4,8 @@ using UnityEngine;
 
 namespace ExcelMaster
 {
-    public class GenerateSource
+    public static class GenerateSource
     {
-        [MenuItem("Examples/ExcelMaster/Generate Source from Excel")]
-        public static void GenerateExample()
-        {
-            string excelFilePath = "Assets/ExcelMaster/Data/Excels/ItemData.xlsx";
-            string className = "ItemData";
-            string tableName = "Item";
-            string outputDirectory = "Assets/ExcelMaster/Scripts/Generated";
-
-            Generate(
-                excelFilePath: excelFilePath,
-                className: className,
-                tableName: tableName,
-                outputDirectory: outputDirectory);
-        }
-
-
         public static void Generate(string excelFilePath, string className, string tableName, string outputDirectory)
         {
             var excelArray = CsvConverter.ExcelToArray(
@@ -64,6 +48,5 @@ namespace ExcelMaster
             System.IO.File.WriteAllText(classFilePath, classSource);
             System.IO.File.WriteAllText(builderFilePath, builderSource);
         }
-
     }
 }

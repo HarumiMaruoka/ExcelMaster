@@ -10,7 +10,7 @@ namespace GameData
 {
     [MemoryTable("Item")]
     [MessagePackObject(true)]
-    public class ItemData
+    public class Item
     {
         [PrimaryKey]
         public int Id { get; set; }

@@ -7,18 +7,18 @@ using MessagePack.Resolvers;
 
 namespace GameData
 {
-    internal static class ItemDataBuilder
+    internal static class ItemBuilder
     {
         /// <summary>
-        /// ItemData 配列から MasterMemory バイナリを生成し保存します。
+        /// Item 配列から MasterMemory バイナリを生成し保存します。
         /// </summary>
-        /// <param name="masters">ItemData 配列</param>
-        /// <param name="outputPath">出力パス。未指定時 'Assets/Example/Binary/ItemData.bytes'。</param>
+        /// <param name="masters">Item 配列</param>
+        /// <param name="outputPath">出力パス。未指定時 'Assets/Example/Binary/Item.bytes'。</param>
         /// <returns>生成されたバイナリ</returns>
-        public static byte[] Build(ItemData[] masters, string outputPath = null)
+        public static byte[] Build(Item[] masters, string outputPath = null)
         {
             if (masters == null) throw new ArgumentNullException(nameof(masters));
-            outputPath = string.IsNullOrWhiteSpace(outputPath) ? "Assets/Example/Binary/ItemData.bytes" : outputPath;
+            outputPath = string.IsNullOrWhiteSpace(outputPath) ? "Assets/Example/Binary/Item.bytes" : outputPath;
 
             var messagePackResolvers = CompositeResolver.Create(
                 MasterMemoryResolver.Instance,
