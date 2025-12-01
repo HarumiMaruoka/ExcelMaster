@@ -115,10 +115,61 @@ namespace ExcelMaster.Builders
             sb.AppendLine();
             sb.AppendLine($"namespace {@namespace}");
             sb.AppendLine("{");
-            sb.AppendLine($" public sealed partial class {className}");
-            sb.AppendLine(" {");
+            sb.AppendLine($"    public sealed partial class {className}");
+            sb.AppendLine("    {");
             sb.Append(Indent(EmitDataSection(className, groups, selection, 0), 2));
-            sb.AppendLine(" }");
+            sb.AppendLine("    }");
+            sb.AppendLine("}");
+            return sb.ToString();
+        }
+
+        // New: build a binary builder partial class file similar to ItemDataBinaryBuilder.cs (improved indentation)
+        public static string BuildBinaryBuilderFile(string @namespace, IEnumerable<string> usingNamespaces, string className, string defaultOutputPath = null)
+        {
+            var sb = new StringBuilder();
+            var usings = new HashSet<string>(usingNamespaces ?? Enumerable.Empty<string>());
+            // Required usings
+            usings.Add("System");
+            usings.Add("System.IO");
+            usings.Add("System.Collections.Generic");
+            usings.Add("MasterMemory");
+            usings.Add("MessagePack");
+            usings.Add("MessagePack.Resolvers");
+            foreach (var ns in usings) sb.AppendLine($"using {ns};");
+            sb.AppendLine();
+            sb.AppendLine($"namespace {@namespace}");
+            sb.AppendLine("{");
+            sb.AppendLine($"    public sealed partial class {className}");
+            sb.AppendLine("    {");
+            sb.AppendLine("        /// <summary>");
+            sb.AppendLine($"        /// {className} 配列から MasterMemory バイナリを生成し保存します。");
+            sb.AppendLine("        /// </summary>");
+            sb.AppendLine($"        /// <param name=\"masters\">{className} 配列</param>");
+            sb.AppendLine("        /// <param name=\"outputPath\">出力パス。未指定時はデフォルトパスが使用されます。</param>");
+            sb.AppendLine("        /// <returns>生成されたバイナリ</returns>");
+            sb.AppendLine($"        public static byte[] BuildBinary(IEnumerable<{className}> masters, string outputPath = null)");
+            sb.AppendLine("        {");
+            sb.AppendLine("            if (masters == null) throw new ArgumentNullException(nameof(masters));");
+            sb.AppendLine("            outputPath ??= " + (defaultOutputPath == null ? $"\"Assets/Generated/{className}.bytes\"" : $"\"{Escape(defaultOutputPath)}\"") + ";");
+            sb.AppendLine();
+            sb.AppendLine("            var messagePackResolvers = CompositeResolver.Create(");
+            sb.AppendLine("                MasterMemoryResolver.Instance,");
+            sb.AppendLine("                StandardResolver.Instance");
+            sb.AppendLine("            );");
+            sb.AppendLine("            var options = MessagePackSerializerOptions.Standard.WithResolver(messagePackResolvers);");
+            sb.AppendLine("            MessagePackSerializer.DefaultOptions = options;");
+            sb.AppendLine();
+            sb.AppendLine("            var builder = new DatabaseBuilder();");
+            sb.AppendLine("            builder.Append(masters);");
+            sb.AppendLine("            var binary = builder.Build();");
+            sb.AppendLine();
+            sb.AppendLine("            var dir = Path.GetDirectoryName(outputPath);");
+            sb.AppendLine("            if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);");
+            sb.AppendLine("            File.WriteAllBytes(outputPath, binary);");
+            sb.AppendLine();
+            sb.AppendLine("            return binary;");
+            sb.AppendLine("        }");
+            sb.AppendLine("    }");
             sb.AppendLine("}");
             return sb.ToString();
         }

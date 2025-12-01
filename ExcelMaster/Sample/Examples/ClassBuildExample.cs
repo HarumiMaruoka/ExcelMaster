@@ -1,11 +1,4 @@
-﻿using ExcelMaster;
-using ExcelMaster.Builders;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-
-
+﻿using ExcelMaster.Builders;
 
 namespace Sample.Examples
 {
@@ -25,12 +18,11 @@ namespace Sample.Examples
         {
             var @namespace = "GameNamespace";
             var className = "ItemData";
-            var usingNamespaces = new List<string> { "MasterMemory", "MessagePack", "System.Collections.Generic" };
 
             // Class and enums (no Data)
             var source = SourceBuilder.Build(
                 @namespace: @namespace,
-                usingNamespaces: usingNamespaces,
+                usingNamespaces: Array.Empty<string>(),
                 className: className,
                 selection: Selection
             );
@@ -38,15 +30,24 @@ namespace Sample.Examples
             // Data-only file as a nice partial class in the same namespace
             var dataSource = SourceBuilder.BuildDataFile(
                 @namespace: @namespace,
-                usingNamespaces: new List<string> { "System.Collections.Generic" },
+                usingNamespaces: Array.Empty<string>(),
                 className: className,
                 selection: Selection
             );
 
+            var builderSource = SourceBuilder.BuildBinaryBuilderFile(
+                @namespace: @namespace,
+                usingNamespaces: new string[] { "Sample" },
+                className: className,
+                defaultOutputPath: "Assets/Generated/ItemData.bytes"
+            );
+
             var outputClassPath = "Assets/Generated/ItemData.cs";
             var outputDataPath = "Assets/Generated/ItemData_DataOnly.cs";
+            var outputBuilderPath = "Assets/Generated/ItemData_BinaryBuilder.cs";
             File.WriteAllText(outputClassPath, source);
             File.WriteAllText(outputDataPath, dataSource);
+            File.WriteAllText(outputBuilderPath, builderSource);
         }
     }
 }
