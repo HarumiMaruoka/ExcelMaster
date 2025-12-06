@@ -16,7 +16,7 @@ namespace GameNamespace
                 floatArraySample = new float[] {  },
                 EnumSample = EnumSample.Member1,
                 HandType = HandType.Goo,
-                Category = Category.Potion
+                ItemCategory = ItemCategory.Potion
             },
             new ItemData
             {
@@ -28,7 +28,7 @@ namespace GameNamespace
                 floatArraySample = new float[] {  },
                 EnumSample = EnumSample.Member2,
                 HandType = HandType.Pa,
-                Category = Category.Equipment
+                ItemCategory = ItemCategory.Equipment
             },
             new ItemData
             {
@@ -40,7 +40,7 @@ namespace GameNamespace
                 floatArraySample = new float[] {  },
                 EnumSample = EnumSample.Member3,
                 HandType = HandType.Pa,
-                Category = Category.Weapon
+                ItemCategory = ItemCategory.Weapon
             }
         };
 

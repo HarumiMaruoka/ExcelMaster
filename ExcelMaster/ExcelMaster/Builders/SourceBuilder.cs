@@ -8,7 +8,7 @@ namespace ExcelMaster.Builders
     public class SourceBuilder
     {
         // Generates C# source code from a selection range (first row: headers, second row: type hints)
-        public static string Build(string @namespace, IEnumerable<string> usingNamespaces, string className, string[][] selection)
+        public static string GenerateClassSource(string @namespace, IEnumerable<string> usingNamespaces, string className, string[][] selection)
         {
             if (selection == null || selection.Length < 3) throw new ArgumentException("selection must contain at least header, type and one data row.");
             var headers = selection[0];
@@ -101,7 +101,7 @@ namespace ExcelMaster.Builders
         }
 
         // New: build a nice standalone file that contains only Data in a partial class with namespace/usings
-        public static string BuildDataFile(string @namespace, IEnumerable<string> usingNamespaces, string className, string[][] selection)
+        public static string GenerateDataSection(string @namespace, IEnumerable<string> usingNamespaces, string className, string[][] selection)
         {
             if (selection == null || selection.Length < 3) throw new ArgumentException("selection must contain at least header, type and one data row.");
             var headers = selection[0];
@@ -124,7 +124,7 @@ namespace ExcelMaster.Builders
         }
 
         // New: build a binary builder partial class file similar to ItemDataBinaryBuilder.cs (improved indentation)
-        public static string BuildBinaryBuilderFile(string @namespace, IEnumerable<string> usingNamespaces, string className, string defaultOutputPath = null)
+        public static string GenerateBinaryBuilder(string @namespace, IEnumerable<string> usingNamespaces, string className, string defaultOutputPath = null)
         {
             var sb = new StringBuilder();
             var usings = new HashSet<string>(usingNamespaces ?? Enumerable.Empty<string>());

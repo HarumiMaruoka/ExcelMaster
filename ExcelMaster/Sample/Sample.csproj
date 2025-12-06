@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Assets\Excels\" />
     <Folder Include="Assets\Csv\" />
   </ItemGroup>
 

@@ -202,11 +202,11 @@ public class ExcelInspector : Editor
             // TODO: クラス生成/更新処理
             Debug.Log($"{classButtonLabel} for sheet {sheetName} -> {classFileRel}");
 
-            GenerateSource.Generate(
-                excelFilePath: _assetPath,
-                className: sheetName,
-                tableName: sheetName,
-                outputDirectory: _classesDirectoryPath);
+            // GenerateSource.Generate(
+            //     excelFilePath: _assetPath,
+            //     className: sheetName,
+            //     tableName: sheetName,
+            //     outputDirectory: _classesDirectoryPath);
 
             AssetDatabase.Refresh();
         }

@@ -24,7 +24,7 @@ namespace GameNamespace
 
         public HandType HandType { get; set; }
 
-        public Category Category { get; set; }
+        public ItemCategory ItemCategory { get; set; }
 
     }
 
@@ -41,7 +41,7 @@ namespace GameNamespace
         Pa
     }
 
-    public enum Category
+    public enum ItemCategory
     {
         Potion,
         Equipment,
