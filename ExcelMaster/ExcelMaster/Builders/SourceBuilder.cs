@@ -7,12 +7,50 @@ namespace ExcelMaster.Builders
 {
     public class SourceBuilder
     {
-        // Generates C# source code from a selection range (first row: headers, second row: type hints)
+        // Parses namespace and class name from selection meta row (row0)
+        public static void ParseMetaFromSelection(string[][] selection, ref string @namespace, ref string className)
+        {
+            if (selection == null || selection.Length == 0) return;
+            var meta = selection[0];
+            if (meta == null || meta.Length == 0) return;
+
+            // Expect first cell like "NameSpace:Confront,ClassName: Item,..."
+            var cell = meta[0];
+            if (string.IsNullOrWhiteSpace(cell)) return;
+
+            var parts = cell.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (var part in parts)
+            {
+                var kv = part.Split(new[] { ':' }, 2);
+                if (kv.Length != 2) continue;
+                var key = kv[0].Trim();
+                var value = kv[1].Trim();
+
+                if (key.Equals("NameSpace", StringComparison.OrdinalIgnoreCase))
+                {
+                    @namespace = value;
+                }
+                else if (key.Equals("ClassName", StringComparison.OrdinalIgnoreCase))
+                {
+                    className = value;
+                }
+            }
+        }
+
+        // Generates C# source code from a selection range (first row: meta, second row: headers, third row: type hints)
         public static string GenerateClassSource(string @namespace, IEnumerable<string> usingNamespaces, string className, string[][] selection)
         {
-            if (selection == null || selection.Length < 3) throw new ArgumentException("selection must contain at least header, type and one data row.");
-            var headers = selection[0];
-            var typeHints = selection[1];
+            // new format:
+            // row0: meta (e.g. "NameSpace:Confront,ClassName: Item")
+            // row1: headers
+            // row2: type hints
+            // row3+: data rows
+            if (selection == null || selection.Length < 4) throw new ArgumentException("selection must contain at least meta, header, type and one data row.");
+
+            ParseMetaFromSelection(selection, ref @namespace, ref className);
+
+            var headers = selection[1];
+            var typeHints = selection[2];
 
             var sb = new StringBuilder();
             int indent = 0;
@@ -39,7 +77,7 @@ namespace ExcelMaster.Builders
             // Collect enum members from data rows for enum groups
             var enumMembers = new Dictionary<string, HashSet<string>>();
             foreach (var g in groups.Where(g => g.IsEnum)) enumMembers[g.Type] = new HashSet<string>();
-            for (int r = 2; r < selection.Length; r++)
+            for (int r = 3; r < selection.Length; r++)
             {
                 var row = selection[r];
                 foreach (var g in groups.Where(g => g.IsEnum))
@@ -90,22 +128,15 @@ namespace ExcelMaster.Builders
             return sb.ToString();
         }
 
-        // New: build only the Data section for separate output file (raw snippet)
-        public static string BuildDataOnly(string className, string[][] selection)
-        {
-            if (selection == null || selection.Length < 3) throw new ArgumentException("selection must contain at least header, type and one data row.");
-            var headers = selection[0];
-            var typeHints = selection[1];
-            var groups = BuildGroups(headers, typeHints);
-            return EmitDataSection(className, groups, selection, 0);
-        }
-
         // New: build a nice standalone file that contains only Data in a partial class with namespace/usings
         public static string GenerateDataSection(string @namespace, IEnumerable<string> usingNamespaces, string className, string[][] selection)
         {
-            if (selection == null || selection.Length < 3) throw new ArgumentException("selection must contain at least header, type and one data row.");
-            var headers = selection[0];
-            var typeHints = selection[1];
+            if (selection == null || selection.Length < 4) throw new ArgumentException("selection must contain at least meta, header, type and one data row.");
+
+            ParseMetaFromSelection(selection, ref @namespace, ref className);
+
+            var headers = selection[1];
+            var typeHints = selection[2];
             var groups = BuildGroups(headers, typeHints);
 
             var sb = new StringBuilder();
@@ -117,7 +148,7 @@ namespace ExcelMaster.Builders
             sb.AppendLine("{");
             sb.AppendLine($"    public sealed partial class {className}");
             sb.AppendLine("    {");
-            sb.Append(Indent(EmitDataSection(className, groups, selection, 0), 2));
+            sb.Append(Indent(EmitDataSection(className, groups, selection, 0, 3), 2));
             sb.AppendLine("    }");
             sb.AppendLine("}");
             return sb.ToString();
@@ -187,7 +218,7 @@ namespace ExcelMaster.Builders
             return sb.ToString();
         }
 
-        private static string EmitDataSection(string className, List<ColumnGroup> groups, string[][] selection, int baseIndent)
+        private static string EmitDataSection(string className, List<ColumnGroup> groups, string[][] selection, int baseIndent, int dataStartRow = 2)
         {
             var sb = new StringBuilder();
             int indent = baseIndent;
@@ -195,7 +226,7 @@ namespace ExcelMaster.Builders
             W($"public readonly static List<{className}> Data = new List<{className}>()");
             W("{");
             indent++;
-            for (int r = 2; r < selection.Length; r++)
+            for (int r = dataStartRow; r < selection.Length; r++)
             {
                 var row = selection[r];
                 W($"new {className}");
