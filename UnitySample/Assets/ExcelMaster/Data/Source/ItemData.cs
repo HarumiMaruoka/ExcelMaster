@@ -1,12 +1,12 @@
 using System.Collections.Generic;
 
-namespace GameNamespace
+namespace Confront
 {
-    public sealed partial class ItemData
+    public sealed partial class Item
     {
-        public readonly static List<ItemData> Data = new List<ItemData>()
+        public readonly static List<Item> Data = new List<Item>()
         {
-            new ItemData
+            new Item
             {
                 Id = 1,
                 Name = "HealPotion",
@@ -16,9 +16,9 @@ namespace GameNamespace
                 floatArraySample = new float[] {  },
                 EnumSample = EnumSample.Member1,
                 HandType = HandType.Goo,
-                Category = Category.Potion
+                ItemCategory = ItemCategory.Potion
             },
-            new ItemData
+            new Item
             {
                 Id = 2,
                 Name = "AttackPotion",
@@ -28,9 +28,9 @@ namespace GameNamespace
                 floatArraySample = new float[] {  },
                 EnumSample = EnumSample.Member2,
                 HandType = HandType.Pa,
-                Category = Category.Equipment
+                ItemCategory = ItemCategory.Equipment
             },
-            new ItemData
+            new Item
             {
                 Id = 3,
                 Name = "DefencePotion",
@@ -40,7 +40,19 @@ namespace GameNamespace
                 floatArraySample = new float[] {  },
                 EnumSample = EnumSample.Member3,
                 HandType = HandType.Pa,
-                Category = Category.Weapon
+                ItemCategory = ItemCategory.Weapon
+            },
+            new Item
+            {
+                Id = 0,
+                Name = "",
+                Parameters = new float[] {  },
+                Addresses = new string[] {  },
+                IntSample = 0,
+                floatArraySample = new float[] {  },
+                EnumSample = (EnumSample)0,
+                HandType = (HandType)0,
+                ItemCategory = (ItemCategory)0
             }
         };
 

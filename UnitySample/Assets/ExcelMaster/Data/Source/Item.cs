@@ -2,10 +2,10 @@ using MasterMemory;
 using MessagePack;
 using System.Collections.Generic;
 
-namespace GameNamespace
+namespace Confront
 {
     [MemoryTable("Item"), MessagePackObject(true)]
-    public sealed partial class ItemData
+    public sealed partial class Item
     {
         [PrimaryKey]
         public int Id { get; set; }
@@ -24,7 +24,7 @@ namespace GameNamespace
 
         public HandType HandType { get; set; }
 
-        public Category Category { get; set; }
+        public ItemCategory ItemCategory { get; set; }
 
     }
 
@@ -41,7 +41,7 @@ namespace GameNamespace
         Pa
     }
 
-    public enum Category
+    public enum ItemCategory
     {
         Potion,
         Equipment,

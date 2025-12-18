@@ -1,0 +1,7 @@
+﻿WorkbookConfig,
+SheetName,Item
+ClassName,Item
+Namespace,ModularPulse.Master
+BinaryName,item.bytes
+CodeOutputDirectory,Assets/Scripts/Generated
+BinaryOutputDirectory,Assets/StreamingAssets/Master

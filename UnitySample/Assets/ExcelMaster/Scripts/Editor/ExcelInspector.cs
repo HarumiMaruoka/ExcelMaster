@@ -23,12 +23,6 @@ public class ExcelInspector : Editor
         ".xls",
     };
 
-    // デフォルト出力先（古い設定との互換用）
-    private string _defaultClassDirectoryPath = "Assets/ExcelMaster/Data/Source";
-    private string _defaultDataDirectoryPath = "Assets/ExcelMaster/Data/Source";
-    private string _defaultBuilderDirectoryPath = "Assets/ExcelMaster/Data/Source";
-    private string _defaultBinaryDirectoryPath = "Assets/ExcelMaster/Data/Binary";
-
     // シート名キャッシュ
     private string[] _sheetNames = System.Array.Empty<string>();
 
@@ -47,6 +41,10 @@ public class ExcelInspector : Editor
         public string dataDir;    // null / empty の場合はデフォルトを使用
         public string builderDir; // null / empty の場合はデフォルトを使用
         public string binaryDir;  // null / empty の場合はデフォルトを使用
+        public string classFileName;
+        public string dataFileName;
+        public string builderFileName;
+        public string binaryFileName;
     }
 
     // シート名 -> 設定
@@ -132,62 +130,6 @@ public class ExcelInspector : Editor
     {
         EditorGUILayout.LabelField("デフォルト出力設定", EditorStyles.boldLabel);
 
-        // クラス出力先(既定)
-        EditorGUILayout.BeginHorizontal();
-        _defaultClassDirectoryPath = EditorGUILayout.TextField("クラス出力先(既定)", _defaultClassDirectoryPath);
-        if (GUILayout.Button("参照…", GUILayout.Width(70)))
-        {
-            var abs = ToAbsolutePathIfPossible(_defaultClassDirectoryPath);
-            var folder = EditorUtility.OpenFolderPanel("クラス出力先(既定)を選択", abs, "");
-            if (!string.IsNullOrEmpty(folder))
-            {
-                _defaultClassDirectoryPath = ToAssetsRelativePath(folder) ?? _defaultClassDirectoryPath;
-            }
-        }
-        EditorGUILayout.EndHorizontal();
-
-        // データ出力先(既定)
-        EditorGUILayout.BeginHorizontal();
-        _defaultDataDirectoryPath = EditorGUILayout.TextField("データ出力先(既定)", _defaultDataDirectoryPath);
-        if (GUILayout.Button("参照…", GUILayout.Width(70)))
-        {
-            var abs = ToAbsolutePathIfPossible(_defaultDataDirectoryPath);
-            var folder = EditorUtility.OpenFolderPanel("データ出力先(既定)を選択", abs, "");
-            if (!string.IsNullOrEmpty(folder))
-            {
-                _defaultDataDirectoryPath = ToAssetsRelativePath(folder) ?? _defaultDataDirectoryPath;
-            }
-        }
-        EditorGUILayout.EndHorizontal();
-
-        // ビルダー出力先(既定)
-        EditorGUILayout.BeginHorizontal();
-        _defaultBuilderDirectoryPath = EditorGUILayout.TextField("ビルダー出力先(既定)", _defaultBuilderDirectoryPath);
-        if (GUILayout.Button("参照…", GUILayout.Width(70)))
-        {
-            var abs = ToAbsolutePathIfPossible(_defaultBuilderDirectoryPath);
-            var folder = EditorUtility.OpenFolderPanel("ビルダー出力先(既定)を選択", abs, "");
-            if (!string.IsNullOrEmpty(folder))
-            {
-                _defaultBuilderDirectoryPath = ToAssetsRelativePath(folder) ?? _defaultBuilderDirectoryPath;
-            }
-        }
-        EditorGUILayout.EndHorizontal();
-
-        // バイナリ出力先(既定)
-        EditorGUILayout.BeginHorizontal();
-        _defaultBinaryDirectoryPath = EditorGUILayout.TextField("バイナリ出力先(既定)", _defaultBinaryDirectoryPath);
-        if (GUILayout.Button("参照…", GUILayout.Width(70)))
-        {
-            var abs = ToAbsolutePathIfPossible(_defaultBinaryDirectoryPath);
-            var folder = EditorUtility.OpenFolderPanel("バイナリ出力先(既定)を選択", abs, "");
-            if (!string.IsNullOrEmpty(folder))
-            {
-                _defaultBinaryDirectoryPath = ToAssetsRelativePath(folder) ?? _defaultBinaryDirectoryPath;
-            }
-        }
-        EditorGUILayout.EndHorizontal();
-
         EditorGUILayout.BeginHorizontal();
         GUILayout.FlexibleSpace();
         if (GUILayout.Button("設定を保存", GUILayout.Width(120)))
@@ -201,6 +143,11 @@ public class ExcelInspector : Editor
         EditorGUILayout.EndHorizontal();
     }
 
+    private string _defaultClassDirectoryPath = "Assets/ExcelMaster/Data/Source";
+    private string _defaultDataDirectoryPath = "Assets/ExcelMaster/Data/Source";
+    private string _defaultBuilderDirectoryPath = "Assets/ExcelMaster/Data/Source";
+    private string _defaultBinaryDirectoryPath = "Assets/ExcelMaster/Data/Binary";
+
     private SheetSettings GetOrCreateSheetSettings(string sheetName)
     {
         if (!_sheetSettingsMap.TryGetValue(sheetName, out var s) || s == null)
@@ -211,7 +158,7 @@ public class ExcelInspector : Editor
                 classDir = _defaultClassDirectoryPath,
                 dataDir = _defaultDataDirectoryPath,
                 builderDir = _defaultBuilderDirectoryPath,
-                binaryDir = _defaultBinaryDirectoryPath
+                binaryDir = _defaultBinaryDirectoryPath,
             };
             _sheetSettingsMap[sheetName] = s;
         }
@@ -266,10 +213,17 @@ public class ExcelInspector : Editor
         EditorGUILayout.LabelField("クラス生成", GUILayout.Width(80));
         settings.generateClass = EditorGUILayout.Toggle(string.Empty, settings.generateClass, GUILayout.Width(18));
         GUILayout.Space(8);
-        // ラベル無しの TextField にして残り幅を全部使わせる
+        // ディレクトリ
         settings.classDir = EditorGUILayout.TextField(
             GUIContent.none,
-            string.IsNullOrEmpty(settings.classDir) ? _defaultClassDirectoryPath : settings.classDir
+            string.IsNullOrEmpty(settings.classDir) ? _defaultClassDirectoryPath : settings.classDir,
+            GUILayout.ExpandWidth(true)
+        );
+        // ファイル名（規定値はシート名）
+        settings.classFileName = EditorGUILayout.TextField(
+            GUIContent.none,
+            string.IsNullOrEmpty(settings.classFileName) ? (sheetName + ".cs") : settings.classFileName,
+            GUILayout.Width(140)
         );
         if (GUILayout.Button("参照…", GUILayout.Width(70)))
         {
@@ -287,7 +241,16 @@ public class ExcelInspector : Editor
         EditorGUILayout.LabelField("データ生成", GUILayout.Width(80));
         settings.generateData = EditorGUILayout.Toggle(string.Empty, settings.generateData, GUILayout.Width(18));
         GUILayout.Space(8);
-        settings.dataDir = EditorGUILayout.TextField(string.Empty, string.IsNullOrEmpty(settings.dataDir) ? _defaultDataDirectoryPath : settings.dataDir);
+        settings.dataDir = EditorGUILayout.TextField(
+            GUIContent.none,
+            string.IsNullOrEmpty(settings.dataDir) ? _defaultDataDirectoryPath : settings.dataDir,
+            GUILayout.ExpandWidth(true)
+        );
+        settings.dataFileName = EditorGUILayout.TextField(
+            GUIContent.none,
+            string.IsNullOrEmpty(settings.dataFileName) ? (sheetName + "Data.cs") : settings.dataFileName,
+            GUILayout.Width(140)
+        );
         if (GUILayout.Button("参照…", GUILayout.Width(70)))
         {
             var abs = ToAbsolutePathIfPossible(settings.dataDir ?? _defaultDataDirectoryPath);
@@ -304,7 +267,16 @@ public class ExcelInspector : Editor
         EditorGUILayout.LabelField("ビルダー生成", GUILayout.Width(80));
         settings.generateBuilder = EditorGUILayout.Toggle(string.Empty, settings.generateBuilder, GUILayout.Width(18));
         GUILayout.Space(8);
-        settings.builderDir = EditorGUILayout.TextField(string.Empty, string.IsNullOrEmpty(settings.builderDir) ? _defaultBuilderDirectoryPath : settings.builderDir);
+        settings.builderDir = EditorGUILayout.TextField(
+            GUIContent.none,
+            string.IsNullOrEmpty(settings.builderDir) ? _defaultBuilderDirectoryPath : settings.builderDir,
+            GUILayout.ExpandWidth(true)
+        );
+        settings.builderFileName = EditorGUILayout.TextField(
+            GUIContent.none,
+            string.IsNullOrEmpty(settings.builderFileName) ? (sheetName + "Builder.cs") : settings.builderFileName,
+            GUILayout.Width(140)
+        );
         if (GUILayout.Button("参照…", GUILayout.Width(70)))
         {
             var abs = ToAbsolutePathIfPossible(settings.builderDir ?? _defaultBuilderDirectoryPath);
@@ -319,7 +291,16 @@ public class ExcelInspector : Editor
         // バイナリ出力先
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("バイナリ出力先", GUILayout.Width(110));
-        settings.binaryDir = EditorGUILayout.TextField(string.Empty, string.IsNullOrEmpty(settings.binaryDir) ? _defaultBinaryDirectoryPath : settings.binaryDir);
+        settings.binaryDir = EditorGUILayout.TextField(
+            GUIContent.none,
+            string.IsNullOrEmpty(settings.binaryDir) ? _defaultBinaryDirectoryPath : settings.binaryDir,
+            GUILayout.ExpandWidth(true)
+        );
+        settings.binaryFileName = EditorGUILayout.TextField(
+            GUIContent.none,
+            string.IsNullOrEmpty(settings.binaryFileName) ? (sheetName + ".mmdb") : settings.binaryFileName,
+            GUILayout.Width(140)
+        );
         if (GUILayout.Button("参照…", GUILayout.Width(70)))
         {
             var abs = ToAbsolutePathIfPossible(settings.binaryDir ?? _defaultBinaryDirectoryPath);
@@ -336,9 +317,13 @@ public class ExcelInspector : Editor
         var builderDir = string.IsNullOrEmpty(settings.builderDir) ? _defaultBuilderDirectoryPath : settings.builderDir;
         var binaryDir = string.IsNullOrEmpty(settings.binaryDir) ? _defaultBinaryDirectoryPath : settings.binaryDir;
 
-        // 出力ファイル存在チェック (シート名ベースの仮仕様)
-        var classFileRel = Path.Combine(classDir, sheetName + ".cs").Replace("\\", "/");
-        var binaryFileRel = Path.Combine(binaryDir, sheetName + ".mmdb").Replace("\\", "/");
+        // ファイル名（未入力ならシート名ベースの規定値）
+        var classFileName = string.IsNullOrEmpty(settings.classFileName) ? (sheetName + ".cs") : settings.classFileName;
+        var binaryFileName = string.IsNullOrEmpty(settings.binaryFileName) ? (sheetName + ".mmdb") : settings.binaryFileName;
+
+        // 出力ファイル存在チェック
+        var classFileRel = Path.Combine(classDir, classFileName).Replace("\\", "/");
+        var binaryFileRel = Path.Combine(binaryDir, binaryFileName).Replace("\\", "/");
 
         bool classExists = File.Exists(ToAbsolutePathIfPossible(classFileRel));
         bool binaryExists = File.Exists(ToAbsolutePathIfPossible(binaryFileRel));
@@ -359,26 +344,103 @@ public class ExcelInspector : Editor
             if (settings.generateClass)
             {
                 var selection = ExcelMaster.ExcelUtil.ReadExcelToStringArray(_assetPath, sheetName);
-                ExcelMaster.Builders.SourceBuilder.GenerateClassSource(@namespace, Array.Empty<string>(), className, selection);
+                string source = ExcelMaster.Builders.SourceBuilder.GenerateClassSource(@namespace, Array.Empty<string>(), className, selection);
+                var directoryPath = ToAbsolutePathIfPossible(classDir);
+                var filePath = Path.Combine(directoryPath, classFileName);
+                Directory.CreateDirectory(directoryPath);
+                File.WriteAllText(filePath, source);
             }
             if (settings.generateData)
             {
                 var selection = ExcelMaster.ExcelUtil.ReadExcelToStringArray(_assetPath, sheetName);
-                ExcelMaster.Builders.SourceBuilder.GenerateDataSection(@namespace, Array.Empty<string>(), className, selection);
+                string source = ExcelMaster.Builders.SourceBuilder.GenerateDataSection(@namespace, Array.Empty<string>(), className, selection);
+                var directoryPath = ToAbsolutePathIfPossible(dataDir);
+                var filePath = Path.Combine(directoryPath, settings.dataFileName);
+                Directory.CreateDirectory(directoryPath);
+                File.WriteAllText(filePath, source);
             }
             if (settings.generateBuilder)
             {
                 var selection = ExcelMaster.ExcelUtil.ReadExcelToStringArray(_assetPath, sheetName);
                 ExcelMaster.Builders.SourceBuilder.ParseMetaFromSelection(selection, ref @namespace, ref className);
-                ExcelMaster.Builders.SourceBuilder.GenerateBinaryBuilder(@namespace, Array.Empty<string>(), className, binaryDir);
+                string source = ExcelMaster.Builders.SourceBuilder.GenerateBinaryBuilder(sheetName, @namespace, Array.Empty<string>(), className, binaryDir);
+                var directoryPath = ToAbsolutePathIfPossible(builderDir);
+                var filePath = Path.Combine(directoryPath, settings.builderFileName);
+                Directory.CreateDirectory(directoryPath);
+                File.WriteAllText(filePath, source);
             }
 
             AssetDatabase.Refresh();
         }
         if (GUILayout.Button(binaryButtonLabel, GUILayout.Width(110)))
         {
-            // TODO: バイナリ生成/更新処理（現状そのまま）
-            Debug.Log($"{binaryButtonLabel} for sheet {sheetName} -> {binaryFileRel}");
+            try
+            {
+                var targetSheetName = sheetName;
+
+                // Assembly-CSharp 系だけを対象にするなど、必要に応じてフィルタ
+                var targetMethod = AppDomain.CurrentDomain
+                    .GetAssemblies()
+                    .SelectMany(a =>
+                    {
+                        // 不要なアセンブリを弾いて高速化（必要に応じて調整）
+                        if (!a.FullName.StartsWith("Assembly-CSharp", StringComparison.Ordinal))
+                        {
+                            return Array.Empty<System.Reflection.MethodInfo>();
+                        }
+
+                        return a.GetTypes()
+                            .SelectMany(t => t.GetMethods(
+                                System.Reflection.BindingFlags.Public
+                                | System.Reflection.BindingFlags.NonPublic
+                                | System.Reflection.BindingFlags.Static));
+                    })
+                    .FirstOrDefault(m =>
+                    {
+                        var attr = (ExcelMaster.ExcelBinaryBuilderAttribute)Attribute.GetCustomAttribute(
+                            m, typeof(ExcelMaster.ExcelBinaryBuilderAttribute));
+                        return attr != null
+                            && string.Equals(attr.SheetName, targetSheetName, StringComparison.Ordinal);
+                    });
+
+                if (targetMethod == null)
+                {
+                    Debug.LogError($"[{targetSheetName}] 用の ExcelBinaryBuilderAttribute を持つメソッドが見つかりません。ビルダーを生成済みか確認してください。");
+                    return;
+                }
+
+                // シグネチャ検証: static void M(string excelPath, string sheetName, string outputBinaryPath)
+                var parameters = targetMethod.GetParameters();
+                if (parameters.Length != 1
+                    || parameters[0].ParameterType != typeof(string)
+                    || targetMethod.ReturnType != typeof(void))
+                {
+                    Debug.LogError(
+                        $"[{targetSheetName}] のビルドメソッドのシグネチャが不正です: " +
+                        $"{targetMethod.DeclaringType.FullName}.{targetMethod.Name}");
+                    return;
+                }
+
+                var excelPathAbs = Path.GetFullPath(_assetPath);
+
+                var binaryDirAbs = ToAbsolutePathIfPossible(binaryDir);
+                Directory.CreateDirectory(binaryDirAbs);
+                var binaryPathAbs = Path.Combine(binaryDirAbs, binaryFileName);
+
+                targetMethod.Invoke(
+                    null,
+                    new object[]
+                    {
+                        binaryPathAbs
+                    });
+
+                Debug.Log($"バイナリ出力完了: {binaryPathAbs}");
+                AssetDatabase.Refresh();
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"バイナリ生成に失敗しました: {ex}");
+            }
         }
         if (binaryExists || classExists)
         {
@@ -440,8 +502,6 @@ public class ExcelInspector : Editor
     [Serializable]
     private class InspectorSettings
     {
-        public string classesDir;  // 旧: クラス出力先(既定)
-        public string binaryDir;   // 旧: バイナリ出力先(既定)
         public string classDir;
         public string dataDir;
         public string builderDir;
@@ -463,18 +523,13 @@ public class ExcelInspector : Editor
             var settings = JsonUtility.FromJson<InspectorSettings>(json);
             if (settings != null)
             {
-                // 旧プロパティとの互換も考慮
                 if (!string.IsNullOrEmpty(settings.classDir)) _defaultClassDirectoryPath = settings.classDir;
-                else if (!string.IsNullOrEmpty(settings.classesDir)) _defaultClassDirectoryPath = settings.classesDir;
 
                 if (!string.IsNullOrEmpty(settings.dataDir)) _defaultDataDirectoryPath = settings.dataDir;
-                else _defaultDataDirectoryPath = _defaultClassDirectoryPath;
 
                 if (!string.IsNullOrEmpty(settings.builderDir)) _defaultBuilderDirectoryPath = settings.builderDir;
-                else _defaultBuilderDirectoryPath = _defaultClassDirectoryPath;
 
                 if (!string.IsNullOrEmpty(settings.binaryDirectory)) _defaultBinaryDirectoryPath = settings.binaryDirectory;
-                else if (!string.IsNullOrEmpty(settings.binaryDir)) _defaultBinaryDirectoryPath = settings.binaryDir;
 
                 _sheetSettingsMap.Clear();
                 if (settings.sheets != null)

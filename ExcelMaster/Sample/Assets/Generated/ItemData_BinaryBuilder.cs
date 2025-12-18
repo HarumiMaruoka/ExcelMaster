@@ -5,11 +5,18 @@ using System.Collections.Generic;
 using MasterMemory;
 using MessagePack;
 using MessagePack.Resolvers;
+using ExcelMaster;
 
 namespace GameNamespace
 {
     public sealed partial class ItemData
     {
+        [ExcelBinaryBuilder("任意のsheetName　引数から指定。")]
+        public static void BuildBinary(string outputPath = null)
+        {
+            BuildBinary(Data, outputPath);
+        }
+
         /// <summary>
         /// ItemData 配列から MasterMemory バイナリを生成し保存します。
         /// </summary>

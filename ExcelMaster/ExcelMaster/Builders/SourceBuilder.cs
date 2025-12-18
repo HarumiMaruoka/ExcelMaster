@@ -155,7 +155,7 @@ namespace ExcelMaster.Builders
         }
 
         // New: build a binary builder partial class file similar to ItemDataBinaryBuilder.cs (improved indentation)
-        public static string GenerateBinaryBuilder(string @namespace, IEnumerable<string> usingNamespaces, string className, string defaultOutputPath = null)
+        public static string GenerateBinaryBuilder(string sheetName, string @namespace, IEnumerable<string> usingNamespaces, string className, string defaultOutputPath = null)
         {
             var sb = new StringBuilder();
             var usings = new HashSet<string>(usingNamespaces ?? Enumerable.Empty<string>());
@@ -166,12 +166,19 @@ namespace ExcelMaster.Builders
             usings.Add("MasterMemory");
             usings.Add("MessagePack");
             usings.Add("MessagePack.Resolvers");
+            usings.Add("ExcelMaster");
             foreach (var ns in usings) sb.AppendLine($"using {ns};");
             sb.AppendLine();
             sb.AppendLine($"namespace {@namespace}");
             sb.AppendLine("{");
             sb.AppendLine($"    public sealed partial class {className}");
             sb.AppendLine("    {");
+            sb.AppendLine($"        [ExcelBinaryBuilder(\"{sheetName}\")]");
+            sb.AppendLine("        public static void BuildBinary(string outputPath = null)");
+            sb.AppendLine("        {");
+            sb.AppendLine("            BuildBinary(Data, outputPath);");
+            sb.AppendLine("        }");
+            sb.AppendLine();
             sb.AppendLine("        /// <summary>");
             sb.AppendLine($"        /// {className} 配列から MasterMemory バイナリを生成し保存します。");
             sb.AppendLine("        /// </summary>");
