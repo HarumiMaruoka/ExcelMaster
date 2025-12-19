@@ -1,11 +1,13 @@
+using Sample;
+using System.Data;
 using MasterMemory;
 using MessagePack;
 using System.Collections.Generic;
 
-namespace GameNamespace
+namespace ModularPulse.Master
 {
     [MemoryTable("Item"), MessagePackObject(true)]
-    public sealed partial class ItemData
+    public sealed partial class Item
     {
         [PrimaryKey]
         public int Id { get; set; }
@@ -26,25 +28,5 @@ namespace GameNamespace
 
         public ItemCategory ItemCategory { get; set; }
 
-    }
-
-    public enum EnumSample
-    {
-        Member1,
-        Member2,
-        Member3
-    }
-
-    public enum HandType
-    {
-        Goo,
-        Pa
-    }
-
-    public enum ItemCategory
-    {
-        Potion,
-        Equipment,
-        Weapon
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Sample.Examples;
 using System;
+using System.Text;
 
 namespace Sample
 {
@@ -7,6 +8,8 @@ namespace Sample
     {
         static void Main(string[] args)
         {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
             ClassBuildExample.Run();
         }
     }

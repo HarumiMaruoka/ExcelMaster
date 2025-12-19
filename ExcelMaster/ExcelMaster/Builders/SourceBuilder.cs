@@ -7,50 +7,10 @@ namespace ExcelMaster.Builders
 {
     public class SourceBuilder
     {
-        // Parses namespace and class name from selection meta row (row0)
-        public static void ParseMetaFromSelection(string[][] selection, ref string @namespace, ref string className)
-        {
-            if (selection == null || selection.Length == 0) return;
-            var meta = selection[0];
-            if (meta == null || meta.Length == 0) return;
-
-            // Expect first cell like "NameSpace:Confront,ClassName: Item,..."
-            var cell = meta[0];
-            if (string.IsNullOrWhiteSpace(cell)) return;
-
-            var parts = cell.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-            foreach (var part in parts)
-            {
-                var kv = part.Split(new[] { ':' }, 2);
-                if (kv.Length != 2) continue;
-                var key = kv[0].Trim();
-                var value = kv[1].Trim();
-
-                if (key.Equals("NameSpace", StringComparison.OrdinalIgnoreCase))
-                {
-                    @namespace = value;
-                }
-                else if (key.Equals("ClassName", StringComparison.OrdinalIgnoreCase))
-                {
-                    className = value;
-                }
-            }
-        }
-
         // Generates C# source code from a selection range (first row: meta, second row: headers, third row: type hints)
-        public static string GenerateClassSource(string @namespace, IEnumerable<string> usingNamespaces, string className, string[][] selection)
+        public static string GenerateClassSource(string @namespace, IEnumerable<string> usingNamespaces, string className, string[][] selection, string tableName = null)
         {
-            // new format:
-            // row0: meta (e.g. "NameSpace:Confront,ClassName: Item")
-            // row1: headers
-            // row2: type hints
-            // row3+: data rows
-            if (selection == null || selection.Length < 4) throw new ArgumentException("selection must contain at least meta, header, type and one data row.");
-
-            ParseMetaFromSelection(selection, ref @namespace, ref className);
-
-            var headers = selection[1];
-            var typeHints = selection[2];
+            ResolveLayout(selection, ref @namespace, ref className, out var headers, out var typeHints, out var dataStartRow);
 
             var sb = new StringBuilder();
             int indent = 0;
@@ -69,27 +29,16 @@ namespace ExcelMaster.Builders
             indent++;
 
             // Determine MemoryTable name
-            var tableName = className.EndsWith("Data", StringComparison.OrdinalIgnoreCase) ? className[..^4] : className;
+            tableName = string.IsNullOrWhiteSpace(tableName)
+                ? (className.EndsWith("Data", StringComparison.OrdinalIgnoreCase) ? className[..^4] : className)
+                : tableName;
 
             // Build column groups: each non-empty header starts a group spanning until next non-empty header
             var groups = BuildGroups(headers, typeHints);
 
-            // Collect enum members from data rows for enum groups
-            var enumMembers = new Dictionary<string, HashSet<string>>();
-            foreach (var g in groups.Where(g => g.IsEnum)) enumMembers[g.Type] = new HashSet<string>();
-            for (int r = 3; r < selection.Length; r++)
-            {
-                var row = selection[r];
-                foreach (var g in groups.Where(g => g.IsEnum))
-                {
-                    var raw = GetFirstNonEmpty(row, g.Indices) ?? string.Empty;
-                    if (!string.IsNullOrWhiteSpace(raw)) enumMembers[g.Type].Add(SanitizeIdentifier(raw));
-                }
-            }
-
-            // Class declaration with attributes similar to Sample.cs, as partial
+            // Class declaration with attributes similar to Sample.cs
             W($"[MemoryTable(\"{tableName}\"), MessagePackObject(true)]");
-            W($"public sealed partial class {className}");
+            W($"public sealed class {className}");
             W("{");
             indent++;
 
@@ -104,41 +53,18 @@ namespace ExcelMaster.Builders
             indent--;
             W("}");
 
-            // Emit enums after class, inside namespace
-            foreach (var kv in enumMembers)
-            {
-                sb.AppendLine();
-                var enumName = kv.Key;
-                var members = kv.Value.ToList();
-                if (members.Count == 0) members.Add("None");
-                W($"public enum {enumName}");
-                W("{");
-                indent++;
-                for (int i = 0; i < members.Count; i++)
-                {
-                    var comma = i < members.Count - 1 ? "," : string.Empty;
-                    W($"{members[i]}{comma}");
-                }
-                indent--;
-                W("}");
-            }
-
             indent--;
             W("}");
             return sb.ToString();
         }
 
-        // New: build a nice standalone file that contains only Data in a partial class with namespace/usings
+        // New: build a nice standalone file that contains only Data in a builder class with namespace/usings
         public static string GenerateDataSection(string @namespace, IEnumerable<string> usingNamespaces, string className, string[][] selection)
         {
-            if (selection == null || selection.Length < 4) throw new ArgumentException("selection must contain at least meta, header, type and one data row.");
-
-            ParseMetaFromSelection(selection, ref @namespace, ref className);
-
-            var headers = selection[1];
-            var typeHints = selection[2];
+            ResolveLayout(selection, ref @namespace, ref className, out var headers, out var typeHints, out var dataStartRow);
             var groups = BuildGroups(headers, typeHints);
 
+            var builderClassName = className + "Builder";
             var sb = new StringBuilder();
             var usings = new HashSet<string>(usingNamespaces ?? Enumerable.Empty<string>());
             usings.Add("System.Collections.Generic");
@@ -146,17 +72,21 @@ namespace ExcelMaster.Builders
             sb.AppendLine();
             sb.AppendLine($"namespace {@namespace}");
             sb.AppendLine("{");
-            sb.AppendLine($"    public sealed partial class {className}");
+            sb.AppendLine($"    public sealed class {builderClassName}");
             sb.AppendLine("    {");
-            sb.Append(Indent(EmitDataSection(className, groups, selection, 0, 3), 2));
+            sb.Append(Indent(EmitDataSection(className, groups, selection, 0, dataStartRow), 2));
             sb.AppendLine("    }");
             sb.AppendLine("}");
             return sb.ToString();
         }
 
-        // New: build a binary builder partial class file similar to ItemDataBinaryBuilder.cs (improved indentation)
-        public static string GenerateBinaryBuilder(string sheetName, string @namespace, IEnumerable<string> usingNamespaces, string className, string defaultOutputPath = null)
+        // New: build a single file that contains both Data section and BinaryBuilder in the same builder class
+        public static string GenerateDataAndBuilder(string @namespace, IEnumerable<string> usingNamespaces, string className, string[][] selection, string defaultOutputPath = null, string sheetName = null)
         {
+            ResolveLayout(selection, ref @namespace, ref className, out var headers, out var typeHints, out var dataStartRow);
+            var groups = BuildGroups(headers, typeHints);
+
+            var builderClassName = className + "Builder";
             var sb = new StringBuilder();
             var usings = new HashSet<string>(usingNamespaces ?? Enumerable.Empty<string>());
             // Required usings
@@ -169,9 +99,84 @@ namespace ExcelMaster.Builders
             usings.Add("ExcelMaster");
             foreach (var ns in usings) sb.AppendLine($"using {ns};");
             sb.AppendLine();
+
+            var tableName = className.EndsWith("Data", StringComparison.OrdinalIgnoreCase) ? className[..^4] : className;
+            sheetName = string.IsNullOrWhiteSpace(sheetName) ? tableName : sheetName;
+
             sb.AppendLine($"namespace {@namespace}");
             sb.AppendLine("{");
-            sb.AppendLine($"    public sealed partial class {className}");
+            sb.AppendLine($"    public sealed class {builderClassName}");
+            sb.AppendLine("    {");
+
+            // Data section
+            sb.Append(Indent(EmitDataSection(className, groups, selection, 0, dataStartRow), 2));
+            sb.AppendLine();
+
+            // Binary builder section
+            sb.AppendLine($"        [ExcelBinaryBuilder(\"{sheetName}\")]");
+            sb.AppendLine("        public static void BuildBinary(string outputPath = null)");
+            sb.AppendLine("        {");
+            sb.AppendLine("            BuildBinary(Data, outputPath);");
+            sb.AppendLine("        }");
+            sb.AppendLine();
+            sb.AppendLine("        /// <summary>");
+            sb.AppendLine($"        /// {className} 配列から MasterMemory バイナリを生成し保存します。");
+            sb.AppendLine("        /// </summary>");
+            sb.AppendLine($"        /// <param name=\"masters\">{className} 配列</param>");
+            sb.AppendLine("        /// <param name=\"outputPath\">出力パス。未指定時はデフォルトパスが使用されます。</param>");
+            sb.AppendLine("        /// <returns>生成されたバイナリ</returns>");
+            sb.AppendLine($"        public static byte[] BuildBinary(IEnumerable<{className}> masters, string outputPath = null)");
+            sb.AppendLine("        {");
+            sb.AppendLine("            if (masters == null) throw new ArgumentNullException(nameof(masters));");
+            sb.AppendLine("            outputPath ??= " + (defaultOutputPath == null ? $"\"Assets/Generated/{className}.bytes\"" : $"\"{Escape(defaultOutputPath)}\"") + ";");
+            sb.AppendLine();
+            sb.AppendLine("            var messagePackResolvers = CompositeResolver.Create(");
+            sb.AppendLine("                MasterMemoryResolver.Instance,");
+            sb.AppendLine("                StandardResolver.Instance");
+            sb.AppendLine("            );");
+            sb.AppendLine("            var options = MessagePackSerializerOptions.Standard.WithResolver(messagePackResolvers);");
+            sb.AppendLine("            MessagePackSerializer.DefaultOptions = options;");
+            sb.AppendLine();
+            sb.AppendLine("            var builder = new DatabaseBuilder();");
+            sb.AppendLine("            builder.Append(masters);");
+            sb.AppendLine("            var binary = builder.Build();");
+            sb.AppendLine();
+            sb.AppendLine("            var dir = Path.GetDirectoryName(outputPath);");
+            sb.AppendLine("            if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);");
+            sb.AppendLine("            File.WriteAllBytes(outputPath, binary);");
+            sb.AppendLine();
+            sb.AppendLine("            return binary;");
+            sb.AppendLine("        }");
+
+            sb.AppendLine("    }");
+            sb.AppendLine("}");
+            return sb.ToString();
+        }
+
+        // New: build a binary builder class file similar to ItemDataBinaryBuilder.cs (improved indentation)
+        public static string GenerateBinaryBuilder(string @namespace, IEnumerable<string> usingNamespaces, string className, string defaultOutputPath = null, string sheetName = null)
+        {
+            var sb = new StringBuilder();
+            var usings = new HashSet<string>(usingNamespaces ?? Enumerable.Empty<string>());
+            var builderClassName = className + "Builder";
+
+            // Required usings
+            usings.Add("System");
+            usings.Add("System.IO");
+            usings.Add("System.Collections.Generic");
+            usings.Add("MasterMemory");
+            usings.Add("MessagePack");
+            usings.Add("MessagePack.Resolvers");
+            usings.Add("ExcelMaster");
+            foreach (var ns in usings) sb.AppendLine($"using {ns};");
+            sb.AppendLine();
+
+            var tableName = className.EndsWith("Data", StringComparison.OrdinalIgnoreCase) ? className[..^4] : className;
+            sheetName = string.IsNullOrWhiteSpace(sheetName) ? tableName : sheetName;
+
+            sb.AppendLine($"namespace {@namespace}");
+            sb.AppendLine("{");
+            sb.AppendLine($"    public sealed class {builderClassName}");
             sb.AppendLine("    {");
             sb.AppendLine($"        [ExcelBinaryBuilder(\"{sheetName}\")]");
             sb.AppendLine("        public static void BuildBinary(string outputPath = null)");
@@ -255,6 +260,28 @@ namespace ExcelMaster.Builders
             return sb.ToString();
         }
 
+        private static void ResolveLayout(string[][] selection, ref string @namespace, ref string className, out string[] headers, out string[] typeHints, out int dataStartRow)
+        {
+            if (selection == null || selection.Length == 0) throw new ArgumentException("selection must contain at least one row.");
+
+            // Simplified layout: first row is headers, second row is type hints (if present), remaining are data
+            int headerRow = 0;
+            if (selection.Length <= headerRow) throw new ArgumentException("selection must contain a header row.");
+            headers = selection[headerRow] ?? Array.Empty<string>();
+
+            int typeRowIndex = headerRow + 1;
+            if (selection.Length > typeRowIndex)
+            {
+                typeHints = selection[typeRowIndex] ?? Array.Empty<string>();
+                dataStartRow = typeRowIndex + 1;
+            }
+            else
+            {
+                typeHints = headers.Length > 0 ? new string[headers.Length] : Array.Empty<string>();
+                dataStartRow = headerRow + 1;
+            }
+        }
+
         private static List<ColumnGroup> BuildGroups(string[] headers, string[] typeHints)
         {
             var groups = new List<ColumnGroup>();
@@ -264,14 +291,9 @@ namespace ExcelMaster.Builders
                 // skip empty header columns
                 if (string.IsNullOrWhiteSpace(headers[i])) { i++; continue; }
                 var name = SanitizeIdentifier(headers[i]);
-                var (attr, type) = ParseType(typeHints, i);
-                // Map enum to real enum named by header
-                bool isEnum = false;
-                if (string.Equals(type, "enum", StringComparison.OrdinalIgnoreCase))
-                {
-                    type = name; // enum type name is header name
-                    isEnum = true;
-                }
+                var (attr, rawType) = ParseType(typeHints, i);
+                // Map enum pseudo type (enum or enum:Type) to actual enum name; enums are defined elsewhere.
+                bool isEnum = TryResolveEnumType(rawType, name, out var type);
                 var indices = new List<int> { i };
                 i++;
                 while (i < headers.Length && string.IsNullOrWhiteSpace(headers[i]))
@@ -363,7 +385,7 @@ namespace ExcelMaster.Builders
         private static (string attr, string type) ParseType(string[] typeHints, int index)
         {
             if (typeHints == null || index >= typeHints.Length) return (string.Empty, "string");
-            var hint = typeHints[index] ?? string.Empty;
+            var hint = (typeHints[index] ?? string.Empty).Trim();
             string attr = string.Empty;
             string type = hint;
 
@@ -374,7 +396,7 @@ namespace ExcelMaster.Builders
                 if (close > 0 && close < hint.Length - 1)
                 {
                     attr = hint.Substring(1, close - 1);
-                    type = hint.Substring(close + 1);
+                    type = hint.Substring(close + 1).Trim();
                 }
             }
 
@@ -387,10 +409,29 @@ namespace ExcelMaster.Builders
                 case "float[]": return (attr, "float[]");
                 case "string[]": return (attr, "string[]");
                 case "int[]": return (attr, "int[]");
-                case "enum": return (attr, "enum"); // will be replaced with header name later
                 default:
                     return (attr, string.IsNullOrWhiteSpace(type) ? "string" : type);
             }
+        }
+
+        private static bool TryResolveEnumType(string rawType, string headerName, out string resolvedType)
+        {
+            if (string.Equals(rawType, "enum", StringComparison.OrdinalIgnoreCase))
+            {
+                resolvedType = headerName; // fallback to header name when type not specified
+                return true;
+            }
+
+            const string enumPrefix = "enum:";
+            if (!string.IsNullOrWhiteSpace(rawType) && rawType.StartsWith(enumPrefix, StringComparison.OrdinalIgnoreCase))
+            {
+                var enumType = rawType.Substring(enumPrefix.Length).Trim();
+                resolvedType = string.IsNullOrWhiteSpace(enumType) ? headerName : enumType;
+                return true;
+            }
+
+            resolvedType = rawType;
+            return false;
         }
 
         private static string JoinInts(string raw)

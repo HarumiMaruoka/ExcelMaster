@@ -7,11 +7,24 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Assets\Generated\**" />
+    <EmbeddedResource Remove="Assets\Generated\**" />
+    <None Remove="Assets\Generated\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="MasterMemory" Version="3.0.4" />
+    <PackageReference Include="MessagePack" Version="3.1.4" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\ExcelMaster\ExcelMaster.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Assets\Binary\" />
+    <Folder Include="Assets\Scripts\" />
+    <Folder Include="Assets\StreamingAssets\" />
   </ItemGroup>
 
 </Project>

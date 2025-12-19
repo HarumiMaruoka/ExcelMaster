@@ -1,12 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using ExcelDataReader;
 
 namespace ExcelMaster
 {
     public static class ExcelUtil
     {
+        public static Dictionary<string, string[][]> ReadWorkbook(string excelPath, int startRow = 1, int startColumn = 1, bool trimCells = true)
+        {
+            if (string.IsNullOrEmpty(excelPath)) throw new ArgumentException("excelPath is null or empty", nameof(excelPath));
+
+            var result = new Dictionary<string, string[][]>(StringComparer.OrdinalIgnoreCase);
+
+            using var stream = File.Open(excelPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            using var reader = ExcelReaderFactory.CreateReader(stream);
+
+            do
+            {
+                var sheet = ReadSheet(reader, startRow, startColumn, skipHeader: false, trimCells: trimCells, stopAtEmptyRow: false, maxRows: null);
+                result[reader.Name] = sheet;
+            } while (reader.NextResult());
+
+            return result;
+        }
+
         public static string[][] ReadExcelToStringArray(string excelPath, int sheetIndex, int startRow = 1, int startColumn = 1, bool skipHeader = false, bool trimCells = true, bool stopAtEmptyRow = false, int? maxRows = null)
         {
             if (string.IsNullOrEmpty(excelPath)) throw new ArgumentException("excelPath is null or empty", nameof(excelPath));

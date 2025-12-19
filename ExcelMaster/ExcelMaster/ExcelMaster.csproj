@@ -6,6 +6,15 @@
 
   <ItemGroup>
     <PackageReference Include="ExcelDataReader" Version="3.8.0" />
+    <PackageReference Include="MasterMemory" Version="3.0.4" />
   </ItemGroup>
+
+  <Target Name="CopyToUnitySamplePlugins" AfterTargets="Build">
+    <PropertyGroup>
+      <UnitySamplePluginsDir>$(MSBuildProjectDirectory)\..\..\UnitySample\Assets\Plugins\</UnitySamplePluginsDir>
+    </PropertyGroup>
+    <MakeDir Directories="$(UnitySamplePluginsDir)" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(UnitySamplePluginsDir)" SkipUnchangedFiles="true" />
+  </Target>
 
 </Project>

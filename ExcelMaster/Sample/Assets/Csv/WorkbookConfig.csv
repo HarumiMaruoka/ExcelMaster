@@ -1,7 +1,10 @@
-﻿WorkbookConfig,
-SheetName,Item
-ClassName,Item
-Namespace,ModularPulse.Master
-BinaryName,item.bytes
-CodeOutputDirectory,Assets/Scripts/Generated
-BinaryOutputDirectory,Assets/StreamingAssets/Master
+﻿WorkbookConfig,,
+SheetName,ItemParams,
+TableName,ItemParams,
+ClassName,ItemParams,
+Namespace,ModularPulse.Master,
+BinaryName,item.bytes,
+ClassOutputDirectory,Assets/Scripts/Generated,
+BuilderOutputDirectory,Assets/Editor/Generated,
+BinaryOutputDirectory,Assets/StreamingAssets/Master,
+AdditionalUsings,System.Data,System.Diagnostics
